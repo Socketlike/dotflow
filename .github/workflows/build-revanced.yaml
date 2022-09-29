@@ -40,14 +40,29 @@ jobs:
     steps:
       - name: 'Install OpenJDK'
         run: sudo apt -y install openjdk-17-jdk
+      - name: 'Get latest release of Revanced CLI'
+        uses: pozetroninc/github-action-get-latest-release@v0.5.0
+        with:
+          repository: revanced/revanced-cli
+        id: cli
+      - name: 'Get latest release of Revanced Patches'
+        uses: pozetroninc/github-action-get-latest-release@v0.5.0
+        with:
+          repository: revanced/revanced-patches
+        id: patches
+      - name: 'Get latest release of Revanced Integrations'
+        uses: pozetroninc/github-action-get-latest-release@v0.5.0
+        with:
+          repository: revanced/revanced-integrations
+        id: integrations
       - name: 'Download Revanced Binaries'
         run: |
-          echo 'Fetching Revanced CLI v2.12.0'
-          curl https://github.com/revanced/revanced-cli/releases/download/v2.12.0/revanced-cli-2.12.0-all.jar -o revanced-cli.jar
-          echo 'Fetching Revanced Patches v2.71.2'
-          curl https://github.com/revanced/revanced-patches/releases/download/v2.71.2/revanced-patches-2.71.2.jar -o revanced-patches.jar
-          echo 'Fetching Revanced Integrations v0.44.0'
-          curl https://github.com/revanced/revanced-integrations/releases/download/v0.44.0/app-release-unsigned.apk -o integrations.apk
+          echo 'Fetching Revanced CLI ${{ step.cli.outputs.release }}'
+          curl https://github.com/revanced/revanced-cli/releases/download/${{ step.cli.outputs.release }}/revanced-cli-$(echo ${{ step.cli.outputs.release }} | sed "s/^v//")-all.jar -o revanced-cli.jar
+          echo 'Fetching Revanced Patches ${{ step.patches.outputs.release }}'
+          curl https://github.com/revanced/revanced-patches/releases/download/${{ step.patches.outputs.release }}/revanced-patches-$(echo ${{ step.patches.outputs.release }} | sed "s/^v//").jar -o revanced-patches.jar
+          echo 'Fetching Revanced Integrations ${{ step.integrations.outputs.release }}'
+          curl https://github.com/revanced/revanced-integrations/releases/download/${{ step.integrations.outputs.release }}/app-release-unsigned.apk -o integrations.apk
       - name: 'Download base YouTube APK'
         run: curl ${{ inputs.apk }} -o base.apk
       - name: 'Set base command'
