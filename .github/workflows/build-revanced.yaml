@@ -56,10 +56,10 @@ jobs:
         if: ${{ inputs.root == true }}
         run: COMMAND+=' -e microg-support'
       - name: 'Set excludes'
-        if: ${{ inputs.exclude != "" }}
+        if: ${{ inputs.exclude != '' }}
         run: COMMAND+=echo ${{ inputs.exclude }} | sed 's/\s//g; s/^/-e /; s/,/ -e /g; s/^/ /'
       - name: 'Set includes'
-        if: ${{ inputs.include != "" }}
+        if: ${{ inputs.include != '' }}
         run: COMMAND+=echo ${{ inputs.include }} | sed 's/\s//g; s/^/-i /; s/,/ -i /g; s/^/ /'
       - name: 'Set exclusive'
         if: ${{ inputs.exclusive == true }}
