@@ -51,22 +51,34 @@ jobs:
       - name: 'Download base YouTube APK'
         run: curl ${{ inputs.apk }} -o base.apk
       - name: 'Set base command'
-        run: COMMAND='java -jar revanced-cli.jar -a youtube.apk -c -b revanced-patches.jar -o revanced.apk'
+        run: echo "COMMAND='java -jar revanced-cli.jar -a youtube.apk -c -b revanced-patches.jar -o revanced.apk'" >> $GITHUB_ENV
       - name: 'Set root status'
         if: ${{ inputs.root == true }}
-        run: COMMAND+=' -e microg-support'
+        run: |
+          NEW_COMMAND='$COMMAND -e microg-support'
+          echo "COMMAND=$NEW_COMMAND" >> $GITHUB_ENV
       - name: 'Set excludes'
         if: ${{ inputs.exclude != '' }}
-        run: COMMAND+=echo ${{ inputs.exclude }} | sed 's/\s//g; s/^/-e /; s/,/ -e /g; s/^/ /'
+        run: |
+          EXCLUDE_LIST=echo ${{ inputs.exclude }} | sed 's/\s//g; s/^/-e /; s/,/ -e /g'
+          NEW_COMMAND='$COMMAND $EXCLUDE_LIST'
+          echo "COMMAND=$NEW_COMMAND" >> $GITHUB_ENV
       - name: 'Set includes'
         if: ${{ inputs.include != '' }}
-        run: COMMAND+=echo ${{ inputs.include }} | sed 's/\s//g; s/^/-i /; s/,/ -i /g; s/^/ /'
+        run: |
+          INCLUDE_LIST+=echo ${{ inputs.include }} | sed 's/\s//g; s/^/-i /; s/,/ -i /g'
+          NEW_COMMAND='$COMMAND $INCLUDE_LIST'
+          echo "$COMMAND=$NEW_COMMAND" >> $GITHUB_ENV
       - name: 'Set exclusive'
         if: ${{ inputs.exclusive == true }}
-        run: COMMAND+=' --exclusive '
+        run: |
+          NEW_COMMAND='$COMMAND --exclusive '
+          echo "COMMAND=$NEW_COMMAND" >> $GITHUB_ENV
       - name: 'Set integrations'
         if: ${{ inputs.integrations == true }}
-        run: COMMAND+=' -m integrations.apk'
+        run: |
+          NEW_COMMAND='$COMMAND -m integrations.apk'
+          echo "COMMAND=$NEW_COMMAND" >> $GITHUB_ENV
       - name: 'Build Revanced'
         run: $COMMAND
       - name: 'Upload to Releases'
