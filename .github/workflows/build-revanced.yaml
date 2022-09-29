@@ -1,0 +1,81 @@
+name: Build Revanced
+run-name: Build Revanced task initiated by ${{ github.actor }}
+on:
+  workflow_dispatch:
+    inputs:
+      apk:
+        description: 'URL for raw YouTube APK for patching'
+        required: true
+        type: string
+      exclude:
+        description: 'List of patch names to exclude, seperated by commas (not space sensitive)'
+        required: false
+        type: string
+      include:
+        description: 'List of patch names to include, if omitted, include all patches (that is not in exclude list), seperated by commas (not space sensitive)'
+        required: false
+        type: string
+      exclusive:
+        description: 'Only apply patches in included list.'
+        required: false
+        type: boolean
+        default: false
+      integrations:
+        description: 'Include integrations'
+        required: false
+        type: boolean
+        default: false
+      root:
+        description: 'If enabled, excludes the microg-support patch.'
+        required: false
+        type: boolean
+        default: false
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Install OpenJDK'
+        run: sudo apt -y install openjdk-17-jdk
+      - name: 'Download Revanced Binaries'
+        run: |
+          echo 'Fetching Revanced CLI v2.12.0'
+          curl https://github.com/revanced/revanced-cli/releases/download/v2.12.0/revanced-cli-2.12.0-all.jar -o revanced-cli.jar
+          echo 'Fetching Revanced Patches v2.71.2'
+          curl https://github.com/revanced/revanced-patches/releases/download/v2.71.2/revanced-patches-2.71.2.jar -o revanced-patches.jar
+          echo 'Fetching Revanced Integrations v0.44.0'
+          curl https://github.com/revanced/revanced-integrations/releases/download/v0.44.0/app-release-unsigned.apk -o integrations.apk
+      - name: 'Download base YouTube APK'
+        run: curl ${{ inputs.apk }} -o base.apk
+      - name: 'Set base command'
+        run:
+          COMMAND='java -jar revanced-cli.jar -a youtube.apk -c -b revanced-patches.jar -o revanced.apk'
+      - name: 'Set root status'
+        if: ${{ inputs.root == true }}
+          COMMAND+=' -e microg-support'
+      - name: 'Set excludes'
+        if: ${{ inputs.exclude != "" }}
+        run:
+          COMMAND+=echo ${{ inputs.exclude }} | sed 's/\s//g; s/^/-e /; s/,/ -e /g; s/^/ /'
+      - name: 'Set includes'
+        if: ${{ inputs.include != "" }}
+        run:
+          COMMAND+=echo ${{ inputs.include }} | sed 's/\s//g; s/^/-i /; s/,/ -i /g; s/^/ /'
+      - name: 'Set exclusive'
+        if: ${{ inputs.exclusive == true }}
+        run:
+          COMMAND+=' --exclusive '
+      - name: 'Set integrations'
+        if: ${{ inputs.integrations == true }}
+        run:
+          COMMAND+=' -m integrations.apk'
+      - name: 'Build Revanced'
+        run: $COMMAND
+      - name: 'Upload to Releases'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: revanced.apk
+          name: Revanced APK built at ${{ steps.var.outputs.date }} by ${{ steps.var.outputs.git_username }}
+          tag_name: ${{ github.run_id }}
+          body: Revanced APK built by ${{ steps.var.outputs.git_username }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
