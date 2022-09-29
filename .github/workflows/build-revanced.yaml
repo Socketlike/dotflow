@@ -1,5 +1,7 @@
 name: Build Revanced
+
 run-name: Build Revanced task initiated by ${{ github.actor }}
+
 on:
   workflow_dispatch:
     inputs:
@@ -30,6 +32,7 @@ on:
         required: false
         type: boolean
         default: false
+
 jobs:
   main:
     if: github.event.repository.owner.id == github.event.sender.id
