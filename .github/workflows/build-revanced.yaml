@@ -71,32 +71,29 @@ jobs:
           curl https://github.com/revanced/revanced-integrations/releases/download/${{ needs.get-releases.outputs.integrations }}/app-release-unsigned.apk -o integrations.apk
           echo 'Download YouTube APK'
           curl ${{ inputs.apk }} -o base.apk
-          echo 'Set base command'
-          echo "COMMAND='java -jar revanced-cli.jar -a youtube.apk -c -b revanced-patches.jar -o revanced.apk'" >> $GITHUB_ENV
+          echo 'Set default command'
+          echo "OPTIONS=java\ -jar\ revanced-cli.jar\ -a youtube.apk\ -c\ -b\ revanced-patches.jar\ -o revanced.apk"
       - name: 'Set root status'
         if: ${{ inputs.root == true }}
-        run: |
-          NEW_COMMAND='$COMMAND -e microg-support'
-          echo "COMMAND=$NEW_COMMAND" >> $GITHUB_ENV
+        run: echo "OPTIONS=-e\ microg-support" >> $GITHUB_ENV
       - name: 'Set excludes'
         if: ${{ inputs.exclude != '' }}
         run: |
-          EXCLUDE_LIST=echo ${{ inputs.exclude }} | sed 's/\s//g; s/^/-e /; s/,/ -e /g'
-          NEW_COMMAND='$COMMAND $EXCLUDE_LIST'
-          echo "COMMAND=$NEW_COMMAND" >> $GITHUB_ENV
+          EXCLUDE_LIST=echo ${{ inputs.exclude }} | sed 's/\s//g; s/^/-e\ /; s/,/ -e\ /g'
+          echo "OPTIONS=$OPTIONS\ $EXCLUDE_LIST" >> $GITHUB_ENV
       - name: 'Set includes'
         if: ${{ inputs.include != '' }}
         run: |
-          INCLUDE_LIST+=echo ${{ inputs.include }} | sed 's/\s//g; s/^/-i /; s/,/ -i /g'
-          echo "COMMAND=\"$COMMAND $INCLUDE_LIST\"" >> $GITHUB_ENV
+          INCLUDE_LIST=echo ${{ inputs.include }} | sed 's/\s//g; s/^/-i\\ /; s/,/ -i\\ /g'
+          echo "OPTIONS=$OPTIONS\ $INCLUDE_LIST" >> $GITHUB_ENV
       - name: 'Set exclusive'
         if: ${{ inputs.exclusive == true }}
-        run: echo "COMMAND=\"$COMMAND --exclusive \"" >> $GITHUB_ENV
+        run: echo "OPTIONS=$OPTIONS\ --exclusive\ " >> $GITHUB_ENV
       - name: 'Set integrations'
         if: ${{ inputs.integrations == true }}
-        run: echo "COMMAND=\"$COMMAND -m integrations.apk\"" >> $GITHUB_ENV
+        run: echo "OPTIONS=$OPTIONS\ -m\ integrations.apk" >> $GITHUB_ENV
       - name: 'Build Revanced'
-        run: $COMMAND
+        run: $OPTIONS
       - name: Upload Artifact
         uses: actions/upload-artifact@v3.1.0
         with:
