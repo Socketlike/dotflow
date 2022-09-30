@@ -62,6 +62,7 @@ jobs:
       - name: 'Prepare'
         run: |
           echo 'Installing OpenJDK 17'
+          sudo apt update && sudo apt upgrade -y
           sudo apt -y install openjdk-17-jdk
           echo 'Fetching Revanced CLI ${{ needs.get-releases.outputs.cli }}'
           curl https://github.com/revanced/revanced-cli/releases/download/${{ needs.get-releases.outputs.cli }}/revanced-cli-$(echo ${{ needs.get-releases.outputs.cli }} | sed "s/^v//")-all.jar -o revanced-cli.jar
@@ -93,7 +94,7 @@ jobs:
         if: ${{ inputs.integrations == true }}
         run: echo "OPTIONS=$OPTIONS\ -m\ integrations.apk" >> $GITHUB_ENV
       - name: 'Build Revanced'
-        run: $OPTIONS
+        run: $(echo $OPTIONS | sed s/\\\\//g)
       - name: Upload Artifact
         uses: actions/upload-artifact@v3.1.0
         with:
