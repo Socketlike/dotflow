@@ -72,7 +72,7 @@ jobs:
           echo 'Download YouTube APK'
           curl ${{ inputs.apk }} -o base.apk
           echo 'Set default command'
-          echo "OPTIONS=java\ -jar\ revanced-cli.jar\ -a youtube.apk\ -c\ -b\ revanced-patches.jar\ -o revanced.apk"
+          echo "OPTIONS=java\ -jar\ revanced-cli.jar\ -a youtube.apk\ -c\ -b\ revanced-patches.jar\ -o revanced.apk" >> $GITHUB_ENV
       - name: 'Set root status'
         if: ${{ inputs.root == true }}
         run: echo "OPTIONS=-e\ microg-support" >> $GITHUB_ENV
