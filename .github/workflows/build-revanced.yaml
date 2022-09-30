@@ -69,13 +69,13 @@ jobs:
           echo 'Upgrade'
           sudo apt update && sudo apt upgrade -y
           echo 'Fetching Revanced CLI ${{ needs.get-releases.outputs.cli }}'
-          curl -QL https://github.com/revanced/revanced-cli/releases/download/${{ needs.get-releases.outputs.cli }}/revanced-cli-$(echo ${{ needs.get-releases.outputs.cli }} | sed "s/^v//")-all.jar -o revanced-cli.jar
+          curl -L https://github.com/revanced/revanced-cli/releases/download/${{ needs.get-releases.outputs.cli }}/revanced-cli-$(echo ${{ needs.get-releases.outputs.cli }} | sed "s/^v//")-all.jar -o revanced-cli.jar
           echo 'Fetching Revanced Patches ${{ needs.get-releases.outputs.patches }}'
-          curl -QL https://github.com/revanced/revanced-patches/releases/download/${{ needs.get-releases.outputs.patches }}/revanced-patches-$(echo ${{ needs.get-releases.outputs.patches }} | sed "s/^v//").jar -o revanced-patches.jar
+          curl -L https://github.com/revanced/revanced-patches/releases/download/${{ needs.get-releases.outputs.patches }}/revanced-patches-$(echo ${{ needs.get-releases.outputs.patches }} | sed "s/^v//").jar -o revanced-patches.jar
           echo 'Fetching Revanced Integrations ${{ needs.get-releases.outputs.integrations }}'
-          curl -QL https://github.com/revanced/revanced-integrations/releases/download/${{ needs.get-releases.outputs.integrations }}/app-release-unsigned.apk -o integrations.apk
+          curl -L https://github.com/revanced/revanced-integrations/releases/download/${{ needs.get-releases.outputs.integrations }}/app-release-unsigned.apk -o integrations.apk
           echo 'Download YouTube APK'
-          curl -QL ${{ inputs.apk }} -o base.apk
+          curl -L ${{ inputs.apk }} -o base.apk
           echo 'Set default command'
           echo "OPTIONS=java\ -jar\ revanced-cli.jar\ -a base.apk\ -c\ -b\ revanced-patches.jar\ -o revanced.apk" >> $GITHUB_ENV
       - name: 'Set root status'
