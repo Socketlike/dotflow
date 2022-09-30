@@ -59,19 +59,23 @@ jobs:
     needs: get-releases
     runs-on: ubuntu-latest
     steps:
+      - name: 'Install Java'
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'  
       - name: 'Prepare'
         run: |
-          echo 'Installing OpenJDK 17'
+          echo 'Upgrade'
           sudo apt update && sudo apt upgrade -y
-          sudo apt -y install openjdk-17-jdk
           echo 'Fetching Revanced CLI ${{ needs.get-releases.outputs.cli }}'
-          wget https://github.com/revanced/revanced-cli/releases/download/${{ needs.get-releases.outputs.cli }}/revanced-cli-$(echo ${{ needs.get-releases.outputs.cli }} | sed "s/^v//")-all.jar -O revanced-cli.jar
+          curl -QL https://github.com/revanced/revanced-cli/releases/download/${{ needs.get-releases.outputs.cli }}/revanced-cli-$(echo ${{ needs.get-releases.outputs.cli }} | sed "s/^v//")-all.jar -o revanced-cli.jar
           echo 'Fetching Revanced Patches ${{ needs.get-releases.outputs.patches }}'
-          wget https://github.com/revanced/revanced-patches/releases/download/${{ needs.get-releases.outputs.patches }}/revanced-patches-$(echo ${{ needs.get-releases.outputs.patches }} | sed "s/^v//").jar -O revanced-patches.jar
+          curl -QL https://github.com/revanced/revanced-patches/releases/download/${{ needs.get-releases.outputs.patches }}/revanced-patches-$(echo ${{ needs.get-releases.outputs.patches }} | sed "s/^v//").jar -o revanced-patches.jar
           echo 'Fetching Revanced Integrations ${{ needs.get-releases.outputs.integrations }}'
-          wget https://github.com/revanced/revanced-integrations/releases/download/${{ needs.get-releases.outputs.integrations }}/app-release-unsigned.apk -O integrations.apk
+          curl -QL https://github.com/revanced/revanced-integrations/releases/download/${{ needs.get-releases.outputs.integrations }}/app-release-unsigned.apk -o integrations.apk
           echo 'Download YouTube APK'
-          wget ${{ inputs.apk }} -O base.apk
+          curl -QL ${{ inputs.apk }} -o base.apk
           echo 'Set default command'
           echo "OPTIONS=java\ -jar\ revanced-cli.jar\ -a base.apk\ -c\ -b\ revanced-patches.jar\ -o revanced.apk" >> $GITHUB_ENV
       - name: 'Set root status'
