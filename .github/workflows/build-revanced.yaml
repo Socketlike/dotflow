@@ -65,9 +65,9 @@ jobs:
           sudo apt -y install openjdk-17-jdk
           echo 'Fetching Revanced CLI ${{ needs.get-releases.outputs.cli }}'
           curl https://github.com/revanced/revanced-cli/releases/download/${{ needs.get-releases.outputs.cli }}/revanced-cli-$(echo ${{ needs.get-releases.outputs.cli }} | sed "s/^v//")-all.jar -o revanced-cli.jar
-          echo 'Fetching Revanced Patches ${{ step.patches.outputs.release }}'
+          echo 'Fetching Revanced Patches ${{ needs.get-releases.outputs.patches }}'
           curl https://github.com/revanced/revanced-patches/releases/download/${{ needs.get-releases.outputs.patches }}/revanced-patches-$(echo ${{ needs.get-releases.outputs.patches }} | sed "s/^v//").jar -o revanced-patches.jar
-          echo 'Fetching Revanced Integrations ${{ step.integrations.outputs.release }}'
+          echo 'Fetching Revanced Integrations ${{ needs.get-releases.outputs.integrations }}'
           curl https://github.com/revanced/revanced-integrations/releases/download/${{ needs.get-releases.outputs.integrations }}/app-release-unsigned.apk -o integrations.apk
           echo 'Download YouTube APK'
           curl ${{ inputs.apk }} -o base.apk
