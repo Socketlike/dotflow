@@ -1,7 +1,5 @@
 name: Build Revanced
-
-run-name: Build Revanced task initiated by ${{ github.actor }}
-
+run-name: Build Revanced - ${{ github.actor }}
 on:
   workflow_dispatch:
     inputs:
@@ -34,39 +32,47 @@ on:
         default: false
 
 jobs:
-  main:
-    if: github.event.repository.owner.id == github.event.sender.id
+  get-releases:
     runs-on: ubuntu-latest
+    outputs:
+      cli: ${{ steps.cli.outputs.release }}
+      patches: ${{ steps.patches.outputs.release }}
+      integrations: ${{ steps.integrations.outputs.release }}
     steps:
-      - name: 'Install OpenJDK'
-        run: sudo apt -y install openjdk-17-jdk
-      - name: 'Get latest release of Revanced CLI'
+      - name: 'Revanced CLI'
         uses: pozetroninc/github-action-get-latest-release@v0.5.0
         with:
           repository: revanced/revanced-cli
         id: cli
-      - name: 'Get latest release of Revanced Patches'
+      - name: 'Revanced Patches'
         uses: pozetroninc/github-action-get-latest-release@v0.5.0
         with:
           repository: revanced/revanced-patches
         id: patches
-      - name: 'Get latest release of Revanced Integrations'
+      - name: 'Revanced Integrations'
         uses: pozetroninc/github-action-get-latest-release@v0.5.0
         with:
           repository: revanced/revanced-integrations
         id: integrations
-      - name: 'Download Revanced Binaries'
+  main:
+    if: github.event.repository.owner.id == github.event.sender.id
+    needs: get-releases
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Prepare'
         run: |
-          echo 'Fetching Revanced CLI ${{ step.cli.outputs.release }}'
-          curl https://github.com/revanced/revanced-cli/releases/download/${{ step.cli.outputs.release }}/revanced-cli-$(echo ${{ step.cli.outputs.release }} | sed "s/^v//")-all.jar -o revanced-cli.jar
+          echo 'Installing OpenJDK 17'
+          sudo apt -y install openjdk-17-jdk
+          echo 'Fetching Revanced CLI ${{ needs.get-releases.outputs.cli }}'
+          curl https://github.com/revanced/revanced-cli/releases/download/${{ needs.get-releases.outputs.cli }}/revanced-cli-$(echo ${{ needs.get-releases.outputs.cli }} | sed "s/^v//")-all.jar -o revanced-cli.jar
           echo 'Fetching Revanced Patches ${{ step.patches.outputs.release }}'
-          curl https://github.com/revanced/revanced-patches/releases/download/${{ step.patches.outputs.release }}/revanced-patches-$(echo ${{ step.patches.outputs.release }} | sed "s/^v//").jar -o revanced-patches.jar
+          curl https://github.com/revanced/revanced-patches/releases/download/${{ needs.get-releases.outputs.patches }}/revanced-patches-$(echo ${{ needs.get-releases.outputs.patches }} | sed "s/^v//").jar -o revanced-patches.jar
           echo 'Fetching Revanced Integrations ${{ step.integrations.outputs.release }}'
-          curl https://github.com/revanced/revanced-integrations/releases/download/${{ step.integrations.outputs.release }}/app-release-unsigned.apk -o integrations.apk
-      - name: 'Download base YouTube APK'
-        run: curl ${{ inputs.apk }} -o base.apk
-      - name: 'Set base command'
-        run: echo "COMMAND='java -jar revanced-cli.jar -a youtube.apk -c -b revanced-patches.jar -o revanced.apk'" >> $GITHUB_ENV
+          curl https://github.com/revanced/revanced-integrations/releases/download/${{ needs.get-releases.outputs.integrations }}/app-release-unsigned.apk -o integrations.apk
+          echo 'Download YouTube APK'
+          curl ${{ inputs.apk }} -o base.apk
+          echo 'Set base command'
+          echo "COMMAND='java -jar revanced-cli.jar -a youtube.apk -c -b revanced-patches.jar -o revanced.apk'" >> $GITHUB_ENV
       - name: 'Set root status'
         if: ${{ inputs.root == true }}
         run: |
@@ -82,26 +88,17 @@ jobs:
         if: ${{ inputs.include != '' }}
         run: |
           INCLUDE_LIST+=echo ${{ inputs.include }} | sed 's/\s//g; s/^/-i /; s/,/ -i /g'
-          NEW_COMMAND='$COMMAND $INCLUDE_LIST'
-          echo "$COMMAND=$NEW_COMMAND" >> $GITHUB_ENV
+          echo "COMMAND=\"$COMMAND $INCLUDE_LIST\"" >> $GITHUB_ENV
       - name: 'Set exclusive'
         if: ${{ inputs.exclusive == true }}
-        run: |
-          NEW_COMMAND='$COMMAND --exclusive '
-          echo "COMMAND=$NEW_COMMAND" >> $GITHUB_ENV
+        run: echo "COMMAND=\"$COMMAND --exclusive \"" >> $GITHUB_ENV
       - name: 'Set integrations'
         if: ${{ inputs.integrations == true }}
-        run: |
-          NEW_COMMAND='$COMMAND -m integrations.apk'
-          echo "COMMAND=$NEW_COMMAND" >> $GITHUB_ENV
+        run: echo "COMMAND=\"$COMMAND -m integrations.apk\"" >> $GITHUB_ENV
       - name: 'Build Revanced'
         run: $COMMAND
-      - name: 'Upload to Releases'
-        uses: softprops/action-gh-release@v1
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3.1.0
         with:
-          files: revanced.apk
-          name: Revanced APK built at ${{ steps.var.outputs.date }} by ${{ steps.var.outputs.git_username }}
-          tag_name: ${{ github.run_id }}
-          body: Revanced APK built by ${{ steps.var.outputs.git_username }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: revanced.apk
+          path: revanced.apk
