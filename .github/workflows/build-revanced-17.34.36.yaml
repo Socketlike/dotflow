@@ -1,0 +1,96 @@
+name: Build Revanced
+run-name: Build Revanced - ${{ github.actor }}
+on:
+  workflow_dispatch:
+    inputs:
+      apk:
+        description: 'URL for raw YouTube APK for patching'
+        required: true
+        type: string
+      exclude:
+        description: 'List of patch names to exclude, seperated by commas (not space sensitive)'
+        required: false
+        type: string
+      include:
+        description: 'List of patch names to include, if omitted, include all patches (that is not in exclude list), seperated by commas (not space sensitive)'
+        required: false
+        type: string
+      exclusive:
+        description: 'Only apply patches in included list.'
+        required: false
+        type: boolean
+        default: false
+      integrations:
+        description: 'Include integrations'
+        required: false
+        type: boolean
+        default: false
+      root:
+        description: 'If enabled, excludes the microg-support patch.'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  get-releases:
+    runs-on: ubuntu-latest
+    outputs:
+      cli: ${{ steps.cli.outputs.release }}
+      patches: ${{ steps.patches.outputs.release }}
+      integrations: ${{ steps.integrations.outputs.release }}
+    steps:
+      - name: 'Revanced CLI'
+        uses: pozetroninc/github-action-get-latest-release@v0.5.0
+        with:
+          repository: revanced/revanced-cli
+        id: cli
+  main:
+    if: github.event.repository.owner.id == github.event.sender.id
+    needs: get-releases
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Install Java'
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'  
+      - name: 'Prepare'
+        run: |
+          echo 'Upgrade'
+          sudo apt update && sudo apt upgrade -y
+          echo 'Fetching Revanced CLI ${{ needs.get-releases.outputs.cli }}'
+          curl -L https://github.com/revanced/revanced-cli/releases/download/${{ needs.get-releases.outputs.cli }}/revanced-cli-$(echo ${{ needs.get-releases.outputs.cli }} | sed "s/^v//")-all.jar -o revanced-cli.jar
+          echo 'Fetching Revanced Patches 2.64.0'
+          curl -L https://github.com/revanced/revanced-patches/releases/download/v2.64.0/revanced-patches-2.64.0.jar -o revanced-patches.jar
+          echo 'Fetching Revanced Integrations 0.46.0'
+          curl -L https://github.com/revanced/revanced-integrations/releases/download/v0.46.0/app-release-unsigned.apk -o integrations.apk
+          echo 'Download YouTube APK'
+          curl -L ${{ inputs.apk }} -o base.apk
+          echo 'Set default command'
+          echo "OPTIONS=java\ -jar\ revanced-cli.jar\ -a base.apk\ -c\ -b\ revanced-patches.jar\ -o revanced.apk" >> $GITHUB_ENV
+      - name: 'Set root status'
+        if: ${{ inputs.root == true }}
+        run: echo "OPTIONS=-e\ microg-support" >> $GITHUB_ENV
+      - name: 'Set excludes'
+        if: ${{ inputs.exclude != '' }}
+        run: |
+          EXCLUDE_LIST=echo ${{ inputs.exclude }} | sed 's/\s//g; s/^/-e\ /; s/,/ -e\ /g'
+          echo "OPTIONS=$OPTIONS\ $EXCLUDE_LIST" >> $GITHUB_ENV
+      - name: 'Set includes'
+        if: ${{ inputs.include != '' }}
+        run: |
+          INCLUDE_LIST=echo ${{ inputs.include }} | sed 's/\s//g; s/^/-i\\ /; s/,/ -i\\ /g'
+          echo "OPTIONS=$OPTIONS\ $INCLUDE_LIST" >> $GITHUB_ENV
+      - name: 'Set exclusive'
+        if: ${{ inputs.exclusive == true }}
+        run: echo "OPTIONS=$OPTIONS\ --exclusive\ " >> $GITHUB_ENV
+      - name: 'Set integrations'
+        if: ${{ inputs.integrations == true }}
+        run: echo "OPTIONS=$OPTIONS\ -m\ integrations.apk" >> $GITHUB_ENV
+      - name: 'Build Revanced'
+        run: $(echo $OPTIONS | sed s/\\\\//g)
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: revanced.apk
+          path: revanced.apk
