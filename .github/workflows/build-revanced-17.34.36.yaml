@@ -1,5 +1,5 @@
-name: Build Revanced
-run-name: Build Revanced - ${{ github.actor }}
+name: Build Revanced (17.34.36)
+run-name: Build Revanced (17.34.36) - ${{ github.actor }}
 on:
   workflow_dispatch:
     inputs:
