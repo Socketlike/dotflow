@@ -65,7 +65,7 @@ jobs:
           echo 'Fetching Revanced Integrations 0.46.0'
           curl -L https://github.com/revanced/revanced-integrations/releases/download/v0.46.0/app-release-unsigned.apk -o integrations.apk
           echo 'Download YouTube APK'
-          curl -L ${{ inputs.apk }} -o base.apk
+          curl -L "${{ inputs.apk }}" -o base.apk
           echo 'Set default command'
           echo "OPTIONS=java\ -jar\ revanced-cli.jar\ -a base.apk\ -c\ -b\ revanced-patches.jar\ -o revanced.apk" >> $GITHUB_ENV
       - name: 'Set root status'
