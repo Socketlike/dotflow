@@ -1,4 +1,4 @@
-: Build Revanced (17.34.36)
+name: Build Revanced (17.34.36)
 run-name: Build Revanced (17.34.36) - ${{ github.actor }}
 on:
   workflow_dispatch:
