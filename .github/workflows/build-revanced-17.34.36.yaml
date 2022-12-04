@@ -1,4 +1,4 @@
-name: Build Revanced (17.34.36)
+: Build Revanced (17.34.36)
 run-name: Build Revanced (17.34.36) - ${{ github.actor }}
 on:
   workflow_dispatch:
@@ -88,7 +88,7 @@ jobs:
         if: ${{ inputs.integrations == true }}
         run: echo "OPTIONS=${{ env.OPTIONS }}\ -m\ integrations.apk" >> $GITHUB_ENV
       - name: 'Build Revanced'
-        run: sh -c $(echo $OPTIONS | sed s/\\\\//g)
+        run: sh -c ${{ env.OPTIONS }}
       - name: Upload Artifact
         uses: actions/upload-artifact@v3.1.0
         with:
