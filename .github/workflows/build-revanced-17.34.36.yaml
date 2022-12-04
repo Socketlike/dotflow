@@ -70,25 +70,25 @@ jobs:
           echo "OPTIONS=java\ -jar\ revanced-cli.jar\ -a base.apk\ -c\ -b\ revanced-patches.jar\ -o revanced.apk" >> $GITHUB_ENV
       - name: 'Set root status'
         if: ${{ inputs.root == true }}
-        run: echo "OPTIONS=-e\ microg-support" >> $GITHUB_ENV
+        run: echo "OPTIONS=${{ env.OPTIONS }}\ -e\ microg-support" >> $GITHUB_ENV
       - name: 'Set excludes'
         if: ${{ inputs.exclude != '' }}
         run: |
           EXCLUDE_LIST=echo ${{ inputs.exclude }} | sed 's/\s//g; s/^/-e\ /; s/,/ -e\ /g'
-          echo "OPTIONS=$OPTIONS\ $EXCLUDE_LIST" >> $GITHUB_ENV
+          echo "OPTIONS=${{ env.OPTIONS }}\ $EXCLUDE_LIST" >> $GITHUB_ENV
       - name: 'Set includes'
         if: ${{ inputs.include != '' }}
         run: |
           INCLUDE_LIST=echo ${{ inputs.include }} | sed 's/\s//g; s/^/-i\\ /; s/,/ -i\\ /g'
-          echo "OPTIONS=$OPTIONS\ $INCLUDE_LIST" >> $GITHUB_ENV
+          echo "OPTIONS=${{ env.OPTIONS }}\ $INCLUDE_LIST" >> $GITHUB_ENV
       - name: 'Set exclusive'
         if: ${{ inputs.exclusive == true }}
-        run: echo "OPTIONS=$OPTIONS\ --exclusive\ " >> $GITHUB_ENV
+        run: echo "OPTIONS=${{ env.OPTIONS }}\ --exclusive\ " >> $GITHUB_ENV
       - name: 'Set integrations'
         if: ${{ inputs.integrations == true }}
-        run: echo "OPTIONS=$OPTIONS\ -m\ integrations.apk" >> $GITHUB_ENV
+        run: echo "OPTIONS=${{ env.OPTIONS }}\ -m\ integrations.apk" >> $GITHUB_ENV
       - name: 'Build Revanced'
-        run: $(echo $OPTIONS | sed s/\\\\//g)
+        run: sh -c $(echo $OPTIONS | sed s/\\\\//g)
       - name: Upload Artifact
         uses: actions/upload-artifact@v3.1.0
         with:
