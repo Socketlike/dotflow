@@ -72,7 +72,7 @@ jobs:
         if: ${{ inputs.experimental == true }}
         run: echo "OPTIONS=${{ env.OPTIONS }}\ --experimental" >> $GITHUB_ENV
       - name: Build
-        run: sh -c "${{ env.OPTIONS }}"
+        run: sh -c "$(echo ${{ env.OPTIONS }})"
       - name: Upload Artifact
         uses: actions/upload-artifact@v3.1.0
         with:
