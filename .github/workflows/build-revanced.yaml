@@ -67,9 +67,9 @@ jobs:
           echo 'Upgrade environment'
           sudo apt update &>/dev/null && sudo apt upgrade -y &>/dev/null
           echo 'Get ReVanced CLI ${{ needs.get-releases.outputs.cli }}'
-          curl -L https://github.com/revanced/revanced-cli/releases/download/${{ needs.get-releases.outputs.cli }}/revanced-cli-$(echo ${{ needs.get-releases.outputs.cli }} | sed "s/^v//")-all.jar -o revanced-cli.jar
+          curl -L https://github.com/revanced/revanced-cli/releases/download/${{ needs.get-releases.outputs.cli }}/revanced-cli-$(echo ${{ needs.get-releases.outputs.cli }} | sed s/v//)-all.jar -o revanced-cli.jar
           echo 'Get ReVanced Patches ${{ needs.get-releases.outputs.patches }}'
-          curl -L https://github.com/revanced/revanced-patches/releases/download/${{ needs.get-releases.outputs.patches }}/revanced-patches-$(echo ${{ needs.get-releases.outputs.patches }} | sed "s/^v//").jar -o revanced-patches.jar
+          curl -L https://github.com/revanced/revanced-patches/releases/download/${{ needs.get-releases.outputs.patches }}/revanced-patches-$(echo ${{ needs.get-releases.outputs.patches }} | sed s/v//).jar -o revanced-patches.jar
           if [ ${{ inputs.integrations }} == true ]; then\
             echo 'Get ReVanced Integrations ${{ needs.get-releases.outputs.integrations }}';\
             curl -L https://github.com/revanced/revanced-integrations/releases/download/${{ needs.get-releases.outputs.integrations }}/app-release-unsigned.apk -o integrations.apk;\
