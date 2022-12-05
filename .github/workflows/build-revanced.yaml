@@ -25,6 +25,11 @@ on:
         required: false
         default: false
         type: boolean
+      experimental:
+        description: 'Apply --experimental (disable version checking)'
+        required: false
+        default: false
+        type: boolean
       root:
         description: "Sign APK with YouTube's keys (root only)"
         required: false
@@ -93,6 +98,9 @@ jobs:
       - name: 'Enable exclusive'
         if: ${{ inputs.exclusive == true }}
         run: echo "OPTIONS=${{ env.OPTIONS }}\ --exclusive" >> $GITHUB_ENV
+      - name: 'Enable experimental'
+        if: ${{ inputs.experimental == true }}
+        run: echo "OPTIONS=${{ env.OPTIONS }}\ --experimental" >> $GITHUB_ENV
       - name: 'Add integrations'
         if: ${{ inputs.integrations == true }}
         run: echo "OPTIONS=${{ env.OPTIONS }}\ -m\ integrations.apk" >> $GITHUB_ENV

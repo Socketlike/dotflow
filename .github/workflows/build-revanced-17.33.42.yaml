@@ -1,5 +1,5 @@
-name: Build ReVanced (17.34.36)
-run-name: ReVanced Build (17.34.36) - ${{ github.actor }}
+name: Build ReVanced (17.33.42)
+run-name: ReVanced Build (17.33.42) - ${{ github.actor }}
 on:
   workflow_dispatch:
     inputs:
@@ -22,6 +22,11 @@ on:
         type: boolean
       integrations:
         description: 'Apply ReVanced Integrations'
+        required: false
+        default: false
+        type: boolean
+      experimental:
+        description: 'Apply --experimental (disable version checking)'
         required: false
         default: false
         type: boolean
@@ -50,7 +55,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-      - name: 'Prepare environment'
+      - name: 'Prepare environme\nt'
         run: |
           echo 'Upgrade environment'
           sudo apt update &>/dev/null && sudo apt upgrade -y &>/dev/null
@@ -81,6 +86,9 @@ jobs:
       - name: 'Enable exclusive'
         if: ${{ inputs.exclusive == true }}
         run: echo "OPTIONS=${{ env.OPTIONS }}\ --exclusive" >> $GITHUB_ENV
+      - name: 'Enable experimental'
+        if: ${{ inputs.experimental == true }}
+        run: echo "OPTIONS=${{ env.OPTIONS }}\ --experimental" >> $GITHUB_ENV
       - name: 'Add integrations'
         if: ${{ inputs.integrations == true }}
         run: echo "OPTIONS=${{ env.OPTIONS }}\ -m\ integrations.apk" >> $GITHUB_ENV
