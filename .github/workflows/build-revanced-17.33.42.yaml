@@ -20,11 +20,6 @@ on:
         required: false
         default: false
         type: boolean
-      integrations:
-        description: 'Apply ReVanced Integrations'
-        required: false
-        default: false
-        type: boolean
       experimental:
         description: 'Apply --experimental (disable version checking)'
         required: false
@@ -52,13 +47,11 @@ jobs:
           curl -L https://github.com/revanced/revanced-cli/releases/download/v2.15.0/revanced-cli-2.15.0-all.jar -o revanced-cli.jar
           echo 'Get ReVanced Patches v2.100.3'
           curl -L https://github.com/revanced/revanced-patches/releases/download/v2.100.3/revanced-patches-2.100.3.jar -o revanced-patches.jar
-          if [ ${{ inputs.integrations }} == true ]; then\
-            echo 'Get ReVanced Integrations v0.65.0';\
-            curl -L https://github.com/revanced/revanced-integrations/releases/download/v0.65.0/app-release-unsigned.apk -o integrations.apk;\
-          fi
+          echo 'Get ReVanced Integrations v0.65.0'
+          curl -L https://github.com/revanced/revanced-integrations/releases/download/v0.65.0/app-release-unsigned.apk -o integrations.apk
           echo 'Get YouTube APK'
           curl -L "${{ inputs.apk }}" -o base.apk
-          echo "OPTIONS=java\ -jar\ revanced-cli.jar\ -a\ base.apk\ -c\ -b\ revanced-patches.jar\ -o\ revanced.apk" >> $GITHUB_ENV
+          echo "OPTIONS=java\ -jar\ revanced-cli.jar\ -m\ integrations.apk\ -a\ base.apk\ -c\ -b\ revanced-patches.jar\ -o\ revanced.apk" >> $GITHUB_ENV
       - name: 'Set root mode'
         if: ${{ inputs.root == true }}
         run: echo "OPTIONS=${{ env.OPTIONS }}\ -e\ microg-support" >> $GITHUB_ENV
@@ -78,9 +71,6 @@ jobs:
       - name: 'Enable experimental'
         if: ${{ inputs.experimental == true }}
         run: echo "OPTIONS=${{ env.OPTIONS }}\ --experimental" >> $GITHUB_ENV
-      - name: 'Add integrations'
-        if: ${{ inputs.integrations == true }}
-        run: echo "OPTIONS=${{ env.OPTIONS }}\ -m\ integrations.apk" >> $GITHUB_ENV
       - name: Build
         run: ${{ env.OPTIONS }}
       - name: Upload Artifact
