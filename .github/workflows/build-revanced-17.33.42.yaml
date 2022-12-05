@@ -82,7 +82,7 @@ jobs:
         if: ${{ inputs.integrations == true }}
         run: echo "OPTIONS=${{ env.OPTIONS }}\ -m\ integrations.apk" >> $GITHUB_ENV
       - name: Build
-        run: sh -c "$(echo ${{ env.OPTIONS }})"
+        run: ${{ env.OPTIONS }}
       - name: Upload Artifact
         uses: actions/upload-artifact@v3.1.0
         with:
