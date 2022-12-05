@@ -36,18 +36,7 @@ on:
         default: false
         type: boolean
 jobs:
-  get-releases:
-    runs-on: ubuntu-latest
-    outputs:
-      cli: ${{ steps.cli.outputs.release }}
-    steps:
-      - name: 'ReVanced CLI'
-        uses: pozetroninc/github-action-get-latest-release@v0.5.0
-        with:
-          repository: revanced/revanced-cli
-        id: cli
   build:
-    needs: get-releases
     runs-on: ubuntu-latest
     steps:
       - name: 'Install Java'
@@ -55,12 +44,12 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-      - name: 'Prepare environme\nt'
+      - name: 'Prepare environment'
         run: |
           echo 'Upgrade environment'
           sudo apt update &>/dev/null && sudo apt upgrade -y &>/dev/null
-          echo 'Get ReVanced CLI ${{ needs.get-releases.outputs.cli }}'
-          curl -L https://github.com/revanced/revanced-cli/releases/download/${{ needs.get-releases.outputs.cli }}/revanced-cli-$(echo ${{ needs.get-releases.outputs.cli }} | sed s/v//)-all.jar -o revanced-cli.jar
+          echo 'Get ReVanced CLI v2.15.0'
+          curl -L https://github.com/revanced/revanced-cli/releases/download/v2.15.0/revanced-cli-2.15.0-all.jar -o revanced-cli.jar
           echo 'Get ReVanced Patches v2.100.3'
           curl -L https://github.com/revanced/revanced-patches/releases/download/v2.100.3/revanced-patches-2.100.3.jar -o revanced-patches.jar
           if [ ${{ inputs.integrations }} == true ]; then\
